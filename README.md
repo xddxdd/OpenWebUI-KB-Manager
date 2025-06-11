@@ -31,7 +31,7 @@ KB-Manager provides a streamlined way to interact with OpenWebUI's API, allowing
 ### Install from source
 
 ```bash
-git clone https://github.com/yourusername/kb-manager.git
+git clone https://github.com/dubh3124/kb-manager.git
 cd kb-manager
 pip install -e .
 ```
