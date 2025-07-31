@@ -13,32 +13,10 @@ from kbmanager.api_interface import KBManagerAPIInterface  # This should be the 
 from kbmanager.app_logic import AppLogic
 from kbmanager.config_manager import ConfigManager
 from kbmanager.exceptions import APIError, ConfigError, FileOperationError
-from kbmanager.setup_wizard import SetupWizard
 
-# REMOVE THIS: from kbmanager.open_web_ui_client.client import AuthenticatedClient
-# NEW: Import from utils and api_interface
 from kbmanager.utils import get_actual_client_instance
 
 logger = logging.getLogger(__name__)
-
-
-# The ensure_api_client function remains the gatekeeper to the setup wizard.
-# It now implicitly relies on KBManagerAPIInterface not being instantiable if
-# the underlying api_client is missing.
-def ensure_api_client():
-    """Ensure API client exists before running commands."""
-    client_path = Path(__file__).parent / "open_web_ui_client"
-
-    if not client_path.exists():
-        click.echo("⚠️  API client not found. This is required for kb-manager to work.\n")
-        wizard = SetupWizard()
-        if wizard.run():
-            click.echo("\n🎉 Great! Now run your command again.")
-        else:
-            click.echo("\n❌ Setup incomplete. For manual setup, see:")
-            click.echo("   https://github.com/your/kb-manager#api-client-setup")
-        sys.exit(0)
-
 
 class CLIContext:
     def __init__(self):
@@ -96,10 +74,6 @@ def cli(ctx, debug, api_key, api_url):
         click.echo(ctx.get_help())
         sys.exit(0)
 
-    # Check for API client existence ONLY IF NOT running 'setup' command
-    if ctx.invoked_subcommand != "setup":
-        ensure_api_client()  # This will sys.exit(0) if client missing
-
     # Load configuration
     if debug:
         logging.getLogger().setLevel(logging.DEBUG)
@@ -118,27 +92,6 @@ def cli(ctx, debug, api_key, api_url):
             logger.error(f"Configuration error: {e}")
             click.echo(f"Error: {e}", err=True)
             sys.exit(1)
-
-
-# Add a manual setup command
-@cli.command()
-@click.pass_context
-def setup(ctx):
-    """Run the setup wizard to configure kb-manager."""
-    # Ensure the config manager is loaded for passing to the setup wizard
-    # We might not have full config yet, but it's needed for the wizard to access
-    # the config_manager object.
-
-    wizard = SetupWizard()
-    if wizard.run():
-        click.echo("\n✅ Setup completed successfully!")
-        click.echo("You can now use kb-manager commands.")
-    else:
-        click.echo("\n❌ Setup was not completed.")
-        sys.exit(1)
-
-
-# ... (all your existing commands remain the same, they should call ctx.init_api_client_and_app_logic()) ...
 
 
 @cli.command()

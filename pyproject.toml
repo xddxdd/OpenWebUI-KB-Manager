@@ -9,17 +9,11 @@ dependencies = [
     "pyyaml",
     "tqdm",
     "pathspec",
-    "requests>=2.32.4",
+    "requests>=2.32.4"
 ]
 requires-python = ">=3.11"
 
 [project.optional-dependencies]
-test = [
-    "pytest>=7.4.0",
-    "pytest-asyncio>=0.21.0",
-    "pytest-cov>=4.1.0",
-    "pytest-mock>=3.11.0",
-]
 dev = [
     "pytest>=7.4.0",
     "pytest-asyncio>=0.21.0",
@@ -27,6 +21,8 @@ dev = [
     "pytest-mock>=3.11.0",
     "ruff>=0.1.0",
     "mypy>=1.5.0",
+    "python-semantic-release>=10.2.0",
+    "openapi-python-client>=0.25.3"
 ]
 
 [project.scripts]
@@ -49,3 +45,19 @@ omit = ["*/tests/*", "*/open_web_ui_client/*"]
 [tool.coverage.report]
 show_missing = true
 skip_covered = false
+
+[tool.semantic_release]
+# Version will be read from pyproject.toml [project] section
+version_source = "toml"
+version_toml = ["pyproject.toml:project.version"]
+# Enable changelog generation
+changelog_file = "CHANGELOG.md"
+# Enable GitHub Release
+upload_to_release = true
+# Build the package as part of the release
+build_command = "pip install build && python -m build"
+
+[tool.semantic_release.branches.main]
+match = "^(main)$"
+prerelease = false
+prerelease_token = "rc"
