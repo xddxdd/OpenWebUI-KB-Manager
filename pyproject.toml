@@ -1,6 +1,6 @@
 [project]
 name = "kb-manager"
-version = "0.1.0"
+version = "0.2.0"
 description = "A CLI tool for managing files and knowledge bases in OpenWebUI."
 authors = [{ name = "Herman Haggerty", email = "herman.haggerty@hemrantech.com" }]
 dependencies = [
