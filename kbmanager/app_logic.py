@@ -99,7 +99,7 @@ class AppLogic:
             click.echo(f"Error: {e}", err=True)
             sys.exit(1)
 
-    async def upload_directory_to_kb(self, directory_path_str: str, kb_id: str, ignore_file_path: Optional[str] = None):
+    async def upload_directory_to_kb(self, directory_path_str: str, kb_id: str, ignore_file_path: Optional[str] = None, skip_existing: Optional[bool] = None):
         directory_path = Path(directory_path_str)
         if not directory_path.is_dir():
             raise FileOperationError(f"Directory not found: {directory_path_str}")
@@ -118,11 +118,28 @@ class AppLogic:
 
         files_to_upload: List[Tuple[Path, str]] = []
 
+        if skip_existing:
+            existing_files = [
+                f.meta.additional_properties["name"]
+                for f in await self._api.list_files_for_knowledge_base(kb_id)
+                if (
+                    hasattr(f, "meta")
+                    and isinstance(f.meta, self._api.FileMetadataResponseMeta)
+                    and "name" in f.meta.additional_properties
+                )
+            ]
+        else:
+            existing_files = []
+
         for root, _, files_in_dir in os.walk(directory_path):
             current_dir_path = Path(root)
             for file_name in files_in_dir:  # Renamed 'files' to 'files_in_dir' to avoid conflict with outer 'files_to_upload'
                 full_file_path = current_dir_path / file_name
                 relative_file_path = str(full_file_path.relative_to(directory_path))
+
+                if file_name in existing_files:
+                    logging.debug(f"Skipping existing file: {relative_file_path}")
+                    continue
 
                 if not kbignore_parser.is_ignored(str(relative_file_path)):
                     files_to_upload.append((full_file_path, relative_file_path))

@@ -184,16 +184,22 @@ async def upload_file(ctx: CLIContext, file_path, kb_id):
     type=click.Path(exists=True, dir_okay=False, resolve_path=True),
     help="Path to a .kbignore file. Defaults to .kbignore in the directory_path if not specified.",
 )
+@click.option(
+    "--skip-existing",
+    'skip_existing',
+    flag_value=True,
+    help="Skip existing files in knowledge base. Files are matched on file name.",
+)
 @click.pass_obj
 @coro
-async def upload_dir(ctx: CLIContext, directory_path, kb_id, ignore_file):
+async def upload_dir(ctx: CLIContext, directory_path, kb_id, ignore_file, skip_existing):
     """
     Uploads files from a directory to a specified knowledge base, respecting .kbignore.
     """
     ctx.init_api_client_and_app_logic()
     click.echo(f"Uploading directory: {directory_path}")
     try:
-        await ctx.app_logic.upload_directory_to_kb(directory_path, kb_id, ignore_file)
+        await ctx.app_logic.upload_directory_to_kb(directory_path, kb_id, ignore_file, skip_existing)
     except (APIError, FileOperationError) as e:
         logger.error(f"Could not complete directory upload: {e}")
         click.echo(f"Error: {e}", err=True)
